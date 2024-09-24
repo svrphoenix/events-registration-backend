@@ -6,12 +6,16 @@ import {
   Param,
   Post,
   Res,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CreateEventDto } from 'src/events/dto/create-event.dto';
 import { EventService } from './events.service';
 import { Event } from './schemas/event.schema';
+import { NotFoundInterceptor } from 'src/interceptors/not-found.interceptor';
+import { IsObjectIdPipe } from 'nestjs-object-id';
 
 @Controller('events')
+@UseInterceptors(new NotFoundInterceptor('No event found for given id', 'id'))
 export class EventController {
   constructor(private readonly eventService: EventService) {}
 
@@ -39,7 +43,10 @@ export class EventController {
   }
 
   @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Event> {
+  async findOne(
+    @Param('id', IsObjectIdPipe)
+    id: string,
+  ): Promise<Event> {
     return this.eventService.findOne(id);
   }
 }
