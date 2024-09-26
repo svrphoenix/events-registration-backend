@@ -5,6 +5,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { DevtoolsModule } from '@nestjs/devtools-integration';
 import { ConfigModule } from '@nestjs/config';
 import { EventModule } from './events/events.module';
+import { ParticipantsModule } from './participants/participants.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { EventModule } from './events/events.module';
       dbName: process.env.DB,
     }),
     EventModule,
+    ParticipantsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

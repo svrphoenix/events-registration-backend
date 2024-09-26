@@ -2,10 +2,9 @@ import {
   Body,
   Controller,
   Get,
-  HttpStatus,
   Param,
   Post,
-  Res,
+  Query,
   UseInterceptors,
 } from '@nestjs/common';
 import { CreateEventDto } from 'src/events/dto/create-event.dto';
@@ -14,32 +13,30 @@ import { Event } from './schemas/event.schema';
 import { NotFoundInterceptor } from 'src/interceptors/not-found.interceptor';
 import { IsObjectIdPipe } from 'nestjs-object-id';
 
+export interface IPaginatedResponse {
+  data: Event[];
+  countTotal: number;
+  pageTotal: number;
+}
+
 @Controller('events')
 @UseInterceptors(new NotFoundInterceptor('No event found for given id', 'id'))
 export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   @Post()
-  async createEvent(@Res() response, @Body() createEventDto: CreateEventDto) {
-    try {
-      const newEvent = await this.eventService.createEvent(createEventDto);
-      return response.status(HttpStatus.CREATED).json({
-        message: 'Event has been created successfully',
-        newEvent,
-      });
-    } catch (err) {
-      console.log(err);
-      return response.status(HttpStatus.BAD_REQUEST).json({
-        statusCode: 400,
-        message: 'Error: Event not created!',
-        error: 'Bad Request',
-      });
-    }
+  async createEvent(@Body() createEventDto: CreateEventDto): Promise<Event> {
+    return await this.eventService.createEvent(createEventDto);
   }
 
   @Get()
-  async findAll(): Promise<Event[]> {
-    return this.eventService.findAll();
+  async findAll(
+    @Query('limit') limitStr: string,
+    @Query('skip') skipStr: string,
+  ): Promise<IPaginatedResponse> {
+    const limit = parseInt(limitStr) ? parseInt(limitStr) : 10;
+    const skip = parseInt(skipStr) ? parseInt(skipStr) : 0;
+    return this.eventService.findAll(limit, skip);
   }
 
   @Get(':id')

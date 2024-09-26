@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateEventDto } from 'src/events/dto/create-event.dto';
 import { Event } from './schemas/event.schema';
+import { IPaginatedResponse } from './events.controller';
 
 @Injectable()
 export class EventService {
@@ -13,8 +14,12 @@ export class EventService {
     return newEvent.save();
   }
 
-  async findAll(): Promise<Event[]> {
-    return this.eventModel.find().exec();
+  async findAll(limit: number, skip: number): Promise<IPaginatedResponse> {
+    const countTotal = await this.eventModel.countDocuments({}).exec();
+    const pageTotal = Math.floor((countTotal - 1) / limit) + 1;
+    const data = await this.eventModel.find().limit(limit).skip(skip).exec();
+
+    return { data, countTotal, pageTotal };
   }
 
   async findOne(id: string): Promise<Event> {
