@@ -12,6 +12,7 @@ import { EventService } from './events.service';
 import { Event } from './schemas/event.schema';
 import { NotFoundInterceptor } from 'src/interceptors/not-found.interceptor';
 import { IsObjectIdPipe } from 'nestjs-object-id';
+import { ApiCreatedResponse, ApiOperation } from '@nestjs/swagger';
 
 export interface IPaginatedResponse {
   data: Event[];
@@ -25,6 +26,10 @@ export class EventController {
   constructor(private readonly eventService: EventService) {}
 
   @Post()
+  @ApiOperation({ summary: 'Create event' })
+  @ApiCreatedResponse({
+    description: 'The event has been successfully created.',
+  })
   async createEvent(@Body() createEventDto: CreateEventDto): Promise<Event> {
     return await this.eventService.createEvent(createEventDto);
   }
